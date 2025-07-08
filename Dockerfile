@@ -19,3 +19,7 @@ EXPOSE 5000
 
 # Start the server
 CMD ["npm", "run", "dev"]
+
+# Install libssl1.1 if available, or fallback to libssl-dev if not
+RUN apt-get update && \
+    (apt-get install -y libssl1.1 || apt-get install -y libssl-dev)
