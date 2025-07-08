@@ -1,0 +1,60 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model Admin {
+  id        String   @id @default(uuid())
+  email     String   @unique
+  password  String
+  createdAt DateTime @default(now())
+}
+
+model Customer {
+  id        String    @id @default(uuid())
+  name      String
+  email     String    @unique
+  password  String
+  bookings  Booking[]
+  createdAt DateTime  @default(now())
+}
+
+model Workshop {
+  id          String     @id @default(uuid())
+  title       String
+  description String
+  date        DateTime
+  maxCapacity Int
+  timeSlots   TimeSlot[]
+  bookings    Booking[]
+  deleted     Boolean    @default(false)
+  createdAt   DateTime   @default(now())
+}
+
+model TimeSlot {
+  id             String    @id @default(uuid())
+  startTime      String
+  endTime        String
+  availableSpots Int
+  workshop       Workshop  @relation(fields: [workshopId], references: [id])
+  workshopId     String
+  bookings       Booking[]
+  createdAt      DateTime  @default(now())
+}
+
+model Booking {
+  id         String   @id @default(uuid())
+  status     String   @default("pending") // pending | confirmed | canceled
+  customer   Customer @relation(fields: [customerId], references: [id])
+  customerId String
+  workshop   Workshop @relation(fields: [workshopId], references: [id])
+  workshopId String
+  timeSlot   TimeSlot @relation(fields: [timeSlotId], references: [id])
+  timeSlotId String
+  deleted    Boolean  @default(false)
+  createdAt  DateTime @default(now())
+}
