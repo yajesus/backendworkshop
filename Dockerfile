@@ -40,7 +40,8 @@ WORKDIR /app
 
 # Copy only production dependencies
 COPY package*.json ./
-RUN npm ci --only=production
+RUN npm install
+
 
 # Copy built app, prisma, and generated client from builder
 COPY --from=builder /app/build ./build
