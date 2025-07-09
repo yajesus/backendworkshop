@@ -6,6 +6,7 @@
     "dev": "nodemon --config nodemon.json",
     "build": "tsc",
     "start": "node build/index.js",
+    "postinstall": "prisma generate",
     "test": "jest"
   },
   "dependencies": {

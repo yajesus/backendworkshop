@@ -1,25 +1,41 @@
-# Dockerfile
+# Production-ready Dockerfile for Render
 FROM node:20-alpine
+
+# Install dumb-init for proper signal handling
+RUN apk add --no-cache dumb-init
+
+# Create app user for security
+RUN addgroup -g 1001 -S nodejs
+RUN adduser -S nodejs -u 1001
 
 # Set working directory
 WORKDIR /app
 
-# Install dependencies
+# Copy package files
 COPY package*.json ./
-RUN npm install
+COPY prisma ./prisma/
 
-# Copy app source
-COPY . .
+# Install dependencies
+RUN npm ci --only=production
 
 # Generate Prisma client
 RUN npx prisma generate
 
+# Copy source code
+COPY . .
+
+# Build the application
+RUN npm run build
+
+# Change ownership to nodejs user
+RUN chown -R nodejs:nodejs /app
+USER nodejs
+
 # Expose port
-EXPOSE 5000
+EXPOSE 3000
 
-# Start the server
-CMD ["npm", "run", "dev"]
+# Use dumb-init to handle signals properly
+ENTRYPOINT ["dumb-init", "--"]
 
-# Install libssl1.1 if available, or fallback to libssl-dev if not
-RUN apt-get update && \
-    (apt-get install -y libssl1.1 || apt-get install -y libssl-dev)
+# Start the application
+CMD ["npm", "start"]
