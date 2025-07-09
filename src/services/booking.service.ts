@@ -49,16 +49,42 @@ export async function create(input: {
   return booking;
 }
 
-export async function getAll() {
-  return prisma.booking.findMany({
-    where: { deleted: false },
-    include: {
-      customer: { select: { name: true, email: true } },
-      workshop: { select: { title: true } },
-      timeSlot: { select: { startTime: true, endTime: true } },
-    },
-    orderBy: { createdAt: "desc" },
-  });
+export async function getAll(options?: {
+  page?: number;
+  limit?: number;
+  status?: string;
+  workshopId?: string;
+  customerId?: string;
+}) {
+  const page = options?.page ?? 1;
+  const limit = options?.limit ?? 10;
+  const skip = (page - 1) * limit;
+  const where: any = { deleted: false };
+  if (options?.status) where.status = options.status;
+  if (options?.workshopId) where.workshopId = options.workshopId;
+  if (options?.customerId) where.customerId = options.customerId;
+
+  const [data, total] = await Promise.all([
+    prisma.booking.findMany({
+      where,
+      include: {
+        customer: { select: { name: true, email: true } },
+        workshop: { select: { title: true } },
+        timeSlot: { select: { startTime: true, endTime: true } },
+      },
+      orderBy: { createdAt: "desc" },
+      skip,
+      take: limit,
+    }),
+    prisma.booking.count({ where }),
+  ]);
+  return {
+    data,
+    page,
+    limit,
+    total,
+    totalPages: Math.ceil(total / limit),
+  };
 }
 
 export async function updateStatus(id: string, status: string) {

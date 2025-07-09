@@ -30,8 +30,15 @@ export const createBooking = asyncHandler(async (req: any, res: Response) => {
 
 export const getAllBookings = asyncHandler(async (req: Request, res: Response) => {
   try {
-    const bookings = await BookingService.getAll();
-    res.json(bookings);
+    const { page, limit, status, workshopId, customerId } = req.query;
+    const result = await BookingService.getAll({
+      page: page ? parseInt(page as string, 10) : undefined,
+      limit: limit ? parseInt(limit as string, 10) : undefined,
+      status: status as string | undefined,
+      workshopId: workshopId as string | undefined,
+      customerId: customerId as string | undefined,
+    });
+    res.json(result);
   } catch (error: any) {
     throw error;
   }

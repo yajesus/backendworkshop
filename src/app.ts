@@ -7,9 +7,25 @@ import workshopRoutes from "./routes/workshop.routes";
 import bookingRoutes from "./routes/booking.routes";
 import statsRoutes from "./routes/stats.routes";
 import { errorHandler } from "./utils/errorHandler";
+import rateLimit from 'express-rate-limit';
 
 dotenv.config();
 const app = express();
+
+// Rate limiting: 100 requests per hour per IP
+const limiter = rateLimit({
+  windowMs: 60 * 60 * 1000, // 1 hour
+  max: 100,
+  message: {
+    error: {
+      message: 'Too many requests from this IP, please try again after an hour',
+      statusCode: 429
+    }
+  },
+  standardHeaders: true,
+  legacyHeaders: false,
+});
+app.use(limiter);
 
 const prisma = new PrismaClient();
 
