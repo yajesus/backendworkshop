@@ -41,8 +41,21 @@ async function connectToDB() {
 
 connectToDB();
 app.use(cors({
-  origin: ['http://localhost:3000', 'http://localhost:3001'],
-  credentials: true
+  origin: (origin, callback) => {
+    const allowedOrigins = [
+      'http://localhost:3000',
+      'http://localhost:3001',
+      'https://chimerical-taffy-f0815b.netlify.app',
+      'https://neon-nasturtium-33603f.netlify.app',
+    ];
+    // Allow requests with no origin (like mobile apps, curl, etc.) or if origin is in allowedOrigins
+    if (!origin || allowedOrigins.includes(origin)) {
+      callback(null, true);
+    } else {
+      callback(null, true); // Allow all origins (for development, not recommended for production)
+    }
+  },
+  credentials: true,
 }));
 app.use(express.json());
 
